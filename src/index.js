@@ -7,6 +7,7 @@ const { getEmbedInvite } = require('./utils/getEmbedInvite');
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
 const messages = ['claim', 'free', 'nitro'];
+const messagesReact = ['bom dia', 'bom dea', 'good morning', 'boom diaa'];
 
 client.once('ready', () => {
   console.log('Bot is Started!');
@@ -64,6 +65,13 @@ client.on('messageCreate', async (message) => {
 		message.react('🔥');
 		message.react('👀');
 	}
+
+	messagesReact.forEach(msg => {
+		if (message.content.toLocaleLowerCase().includes(msg.toLocaleLowerCase())) {
+			message.react('🌞');
+			message.react('❤️');
+		}
+	});
 });
 
 client.on('interactionCreate', async interaction => {
