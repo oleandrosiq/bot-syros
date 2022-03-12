@@ -3,11 +3,12 @@ const { token, prefix,channelLogId} = require('../config.json');
 
 const { getEmbedLog } = require('./utils/getEmbedLog');
 const { getEmbedInvite } = require('./utils/getEmbedInvite');
+const { api } = require('./api');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
 const messages = ['claim', 'free', 'nitro'];
-const messagesReact = ['bom dia', 'bom dea', 'good morning', 'boom diaa'];
+const messagesReact = ['bom dia', 'bom dea', 'good morning', 'boom diaa', 'bm dia'];
 
 client.once('ready', () => {
   console.log('Bot is Started!');
@@ -32,8 +33,12 @@ client.on('messageCreate', async (message) => {
 	if (message.content.startsWith(prefix)) {
 		const command = message.content.slice(prefix.length).split(/ +/);
 
-		const embedLog = await getEmbedLog({ description: `${message.author} executou o comando - (${command[0]}) no canal ${message.channel}`, message });
-		message.guild.channels.cache.get(channelLogId).send(embedLog);
+		message.guild.channels.cache.forEach(async (channel) => {
+			if (channel.name === 'log-syros') {
+				const embedLog = await getEmbedLog({ description: `${message.author} executou o comando - (${command[0]}) no canal ${message.channel}`, message });
+				channel.send(embedLog);
+			}
+		});
 
 		if (command[0] === 'kick') {
 			if (message.member.permissions.has('KICK_MEMBERS')) {
@@ -59,6 +64,44 @@ client.on('messageCreate', async (message) => {
 			const embedInvite = await getEmbedInvite('message', message);
 			message.channel.send(embedInvite);
 		}
+
+		if (command[0] === 'timeout') {
+			if (message.member.permissions.has('ADMINISTRATOR')) {
+				const time = command[1];
+
+				if (!time) return message.channel.send('Você precisa informar um tempo!');
+
+				const user = message.mentions.users.first();
+				if (!user) return message.channel.send('Você precisa informar um usuário!');
+				const milliseconds = time * 1000;
+
+				if (!milliseconds || milliseconds < 10000 || milliseconds > 2419200000) {
+					return message.channel.send('Você precisa informar um tempo válido!, entre 10s e 28d!');
+				}
+
+				const iosTime = new Date(Date.now() + milliseconds).toISOString();
+
+				try {
+					await api.patch(`guilds/${message.guild.id}/members/${user.id}`, {
+						mute_reason: 'Timeout',
+						deaf_reason: 'Timeout',
+						guild_id: message.guild.id,
+						communication_disabled_until: iosTime
+					});
+
+					message.channel.send(`${user} foi silenciado por ${time} minutos!`);
+				} catch (error) {}
+			} else {
+				const embedLog = await getEmbedLog({ description: `${message.author} tentou executar um comando que não tem permissão! - (command: ${command[0]})`, message });
+				message.guild.channels.cache.get(channelLogId).send(embedLog);
+
+				message.delete();
+				message.channel.send({ 
+					content: `<@${message.author.id}> Você não tem permissão para executar esse comando!`,
+					allowedMentions: { users: [message.author.id] }
+				});
+			}
+		}
 	}
 	
 	if (message.content.toLocaleLowerCase().includes('leandro' || 'l e a n d r o' || 'lêandro')) {
@@ -67,9 +110,8 @@ client.on('messageCreate', async (message) => {
 	}
 
 	messagesReact.forEach(msg => {
-		if (message.content.toLocaleLowerCase().includes(msg.toLocaleLowerCase())) {
-			message.react('🌞');
-			message.react('❤️');
+		if (message.content.toLocaleLowerCase().includes(msg.toLocaleLowerCase()) && message.author.id !== client.user.id) {
+			message.channel.send(message.author.toString() + ' Bom diaaa! 🌞');
 		}
 	});
 });
