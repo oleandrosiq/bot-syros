@@ -24,8 +24,6 @@ async function action(message) {
     message.guild.members.kick(userMention.id);
     message.channel.send(`** ${userMention.username} foi kickado do servidor!**`);
 
-    message.guild.channels.cache.get(channelLogId).send();
-  
     message.guild.channels.cache.forEach(async (channel) => {
       if (channel.name === 'log-syros') {
         channel.send(`${userMention.username} foi Kikado do servidor!`);

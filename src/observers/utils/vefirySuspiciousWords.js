@@ -10,10 +10,14 @@ async function vefirySuspiciousWords(message, client) {
 
       if (role) {
         if (role.permissions.has('MANAGE_MESSAGES')) {
-          message.channel.send({
-            content: `${await role.setMentionable()} Mensagem suspeita de ${message.author} detectada no canal ${message.channel}.`,
-            allowedMentions: {
-              roles: [role.id],
+          message.guild.channels.cache.forEach(async (channel) => {
+            if (channel.name === 'log-syros') {
+              channel.send({
+                content: `${await role.setMentionable()} Mensagem suspeita de ${message.author} detectada no canal ${message.channel}.`,
+                allowedMentions: {
+                  roles: [role.id],
+                }
+              });
             }
           });
         }
