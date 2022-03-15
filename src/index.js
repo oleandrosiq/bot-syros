@@ -1,14 +1,16 @@
 const { Client, Intents } = require('discord.js');
-const { token, prefix,channelLogId} = require('../config.json');
+
+const { token, prefix } = require('../config.json');
 
 const { getEmbedLog } = require('./utils/getEmbedLog');
 const { getEmbedInvite } = require('./utils/getEmbedInvite');
-const { api } = require('./api');
+
+const { commands, allCommands } = require('./commands');
+const { messageCreate } = require('./observers/messageCreate');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
 const messages = ['claim', 'free', 'nitro'];
-const messagesReact = ['bom dia', 'bom dea', 'good morning', 'boom diaa', 'bm dia'];
 
 client.once('ready', () => {
   console.log('Bot is Started!');
@@ -19,107 +21,47 @@ client.on('guildMemberRemove', member => {
 });
 
 client.on('messageCreate', async (message) => {
+	await messageCreate(message, client);
+
 	messages.forEach(msg => {
 		if (message.content.toLocaleLowerCase().includes(msg.toLocaleLowerCase())) {
 			const hasProtocolHttp = message.content.includes('http') || message.content.includes('https');
 			if (hasProtocolHttp) {
-				// message.delete();
-				message.guild.channels.cache.get(channelLogId).send(`${message.author} Enviou um link no canal ${message.channel}!`);
-				console.log(`Message from ${message.author.username}: ${message.content}`);
+				message.guild.channels.cache.forEach(async (channel) => {
+					if (channel.name === 'log-syros') {
+						const embedLog = await getEmbedLog({ description: `${message.author} Enviou um link no canal ${message.channel}!`, message });
+						channel.send(embedLog);
+					}
+				});
 			}
 		}
 	});
 
 	if (message.content.startsWith(prefix)) {
-		const command = message.content.slice(prefix.length).split(/ +/);
+		const command = message.content.slice(prefix.length).split(/ +/)[0];
 
-		message.guild.channels.cache.forEach(async (channel) => {
-			if (channel.name === 'log-syros') {
-				const embedLog = await getEmbedLog({ description: `${message.author} executou o comando - (${command[0]}) no canal ${message.channel}`, message });
-				channel.send(embedLog);
-			}
-		});
-
-		if (command[0] === 'kick') {
-			if (message.member.permissions.has('KICK_MEMBERS')) {
-				const userMention = message.mentions.users.first();
-
-				message.delete();
-				message.guild.members.kick(userMention.id);
-				message.channel.send(`${userMention.username} foi kickado do servidor!`);
-				message.guild.channels.cache.get(channelLogId).send(`${userMention.username} foi Kikado do servidor!`);
-			} else {
-				const embedLog = await getEmbedLog({ description: `${message.author} tentou executar um comando que não tem permissão! - (command: ${command[0]})`, message });
-				message.guild.channels.cache.get(channelLogId).send(embedLog);
-
-				message.delete();
-				message.channel.send({ 
-					content: `<@${message.author.id}> Você não tem permissão para executar esse comando!`,
-					allowedMentions: { users: [message.author.id] }
-				});
-			}
-		}
-
-		if (command[0] === 'invite') {
-			const embedInvite = await getEmbedInvite('message', message);
-			message.channel.send(embedInvite);
-		}
-
-		if (command[0] === 'timeout') {
-			if (message.member.permissions.has('ADMINISTRATOR')) {
-				const time = command[1];
-
-				if (!time) return message.channel.send('Você precisa informar um tempo!');
-
-				const user = message.mentions.users.first();
-				if (!user) return message.channel.send('Você precisa informar um usuário!');
-				const milliseconds = time * 1000;
-
-				if (!milliseconds || milliseconds < 10000 || milliseconds > 2419200000) {
-					return message.channel.send('Você precisa informar um tempo válido!, entre 10s e 28d!');
+		if (allCommands.includes(command)) {
+			const cmd = await commands(command, message);
+			cmd.action(message);
+			
+			message.guild.channels.cache.forEach(async (channel) => {
+				if (channel.name === 'log-syros') {
+					const embedLog = await getEmbedLog({ description: `${message.author} executou o comando - (${command}) no canal ${message.channel}`, message });
+					channel.send(embedLog);
 				}
-
-				const iosTime = new Date(Date.now() + milliseconds).toISOString();
-
-				try {
-					await api.patch(`guilds/${message.guild.id}/members/${user.id}`, {
-						mute_reason: 'Timeout',
-						deaf_reason: 'Timeout',
-						guild_id: message.guild.id,
-						communication_disabled_until: iosTime
-					});
-
-					message.channel.send(`${user} foi silenciado por ${time} minutos!`);
-				} catch (error) {}
-			} else {
-				const embedLog = await getEmbedLog({ description: `${message.author} tentou executar um comando que não tem permissão! - (command: ${command[0]})`, message });
-				message.guild.channels.cache.get(channelLogId).send(embedLog);
-
-				message.delete();
-				message.channel.send({ 
-					content: `<@${message.author.id}> Você não tem permissão para executar esse comando!`,
-					allowedMentions: { users: [message.author.id] }
-				});
-			}
+			});
+		} else {
+			message.delete();
+			message.channel.send({ 
+				content: `<@${message.author.id}> **Comando não encontrado!**`,
+				allowedMentions: { users: [message.author.id] }
+			});
 		}
 	}
-	
-	if (message.content.toLocaleLowerCase().includes('leandro' || 'l e a n d r o' || 'lêandro')) {
-		message.react('🔥');
-		message.react('👀');
-	}
-
-	messagesReact.forEach(msg => {
-		if (message.content.toLocaleLowerCase().includes(msg.toLocaleLowerCase()) && message.author.id !== client.user.id) {
-			message.channel.send(message.author.toString() + ' Bom diaaa! 🌞');
-		}
-	});
 });
 
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
-
-	console.log(`${interaction.user.tag} in #${interaction.channel.name} triggered an interaction.`);
 
 	const { commandName} = interaction;
 
