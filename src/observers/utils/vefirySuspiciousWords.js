@@ -1,4 +1,5 @@
 const { suspiciousWords } = require('../../../datas.json');
+const { getEmbedLogSuspiciousWords } = require('../../utils/getEmbedLogSuspiciousWords');
 
 async function vefirySuspiciousWords(message, client) {
   if (message.author.id !== client.user.id) {
@@ -12,11 +13,11 @@ async function vefirySuspiciousWords(message, client) {
         if (role.permissions.has('MANAGE_MESSAGES')) {
           message.guild.channels.cache.forEach(async (channel) => {
             if (channel.name === 'log-syros') {
-              channel.send({
-                content: `${await role.setMentionable()} Mensagem suspeita de ${message.author} detectada no canal ${message.channel}.`,
-                allowedMentions: {
-                  roles: [role.id],
-                }
+              const embed = getEmbedLogSuspiciousWords(message);
+              channel.send({ 
+                embeds: [embed], 
+                content: `${await role.setMentionable()} **Mensagem suspeita detectada!**`,
+                allowedMentions: { roles: [role.id] }
               });
             }
           });

@@ -1,4 +1,4 @@
-const { Client, Intents } = require('discord.js');
+const { Client, Intents, MessageEmbed } = require('discord.js');
 
 const { token, prefix } = require('../config.json');
 
@@ -18,6 +18,14 @@ client.once('ready', () => {
 
 client.on('guildMemberRemove', member => {
 	console.log(`${member.user.tag} Saiu do servidor!`);
+});
+
+client.on('messageDelete', async (message) => {
+	message.guild.channels.cache.forEach(async (channel) => {
+		if (channel.name === 'log-syros') {
+			channel.send(`**Mensagem deletada!**\n Mensagem: ${message.content}\n Autor: ${message.author.tag}\n Canal: ${message.channel} \n apagada por: ${message.author}`);
+		}
+	});
 });
 
 client.on('messageCreate', async (message) => {

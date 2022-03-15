@@ -1,8 +1,7 @@
-const { goodMorningMessages, suspiciousWords } = require('../../datas.json');
+const { goodMorningMessages } = require('../../datas.json');
 const { vefirySuspiciousWords } = require('./utils/vefirySuspiciousWords');
 
-async function messageCreate(message, client) {
-  // console.log(message);
+async function messageCreate(message, client, embed) {
   vefirySuspiciousWords(message, client);
 
   if (message.author.id !== client.user.id) {
