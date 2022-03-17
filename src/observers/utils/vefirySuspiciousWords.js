@@ -7,6 +7,7 @@ async function vefirySuspiciousWords(message, client) {
     const isSuspiciousWord = words.some(word => suspiciousWords.includes(word));
 
     if (isSuspiciousWord) {
+      // Alterar para pegar alguma role com permissão de apagar mensagens
       const role = message.guild.roles.cache.find(role => role.name === '🤝 | Moderador Discord');
 
       if (role) {

@@ -1,8 +1,9 @@
 const actionInvite = require('./invite');
 const actionKick = require('./kick');
 const actionTimeout = require('./timeout');
+const actionLock = require('./lock');
 
-const allCommands = ['invite', 'kick', 'timeout'];
+const allCommands = ['invite', 'kick', 'timeout', 'lock'];
 
 async function commands(command) {  
   const allCommands = {
@@ -21,6 +22,11 @@ async function commands(command) {
       description: 'Silencia um usuário do servidor!',
       action: actionTimeout,
     },
+    'lock': {
+      name: 'lock',
+      description: 'Trava um canal do servidor!',
+      action: actionLock,
+    }
   };
 
   return allCommands[command];

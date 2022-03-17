@@ -1,6 +1,6 @@
 {
   "goodMorningMessages": ["bom dia", "bom dea", "good morning", "boom diaa", "bm dia"],
   "goodNightMessages": ["good night", "boa noite"],
-  "suspiciousWords": ["da o cu", "cu", "caraio", "caralho", "puta", "otario", "idiota", "troxa", "trouxa", "vagabunda", "vagabundo", "negro", "preto", "vadia"],
+  "suspiciousWords": ["fake-word", "da o cu", "cu", "caraio", "caralho", "puta", "otario", "idiota", "troxa", "trouxa", "vagabunda", "vagabundo", "negro", "preto", "vadia"],
   "suspiciousLinks": ["nitro", "claim", "free"]
 }
