@@ -1,4 +1,4 @@
-const { goodMorningMessages } = require('../../datas.json');
+const { goodMorningMessages, goodNightMessages } = require('../../datas.json');
 const { vefirySuspiciousWords } = require('./utils/vefirySuspiciousWords');
 
 async function messageCreate(message, client) {
@@ -8,6 +8,12 @@ async function messageCreate(message, client) {
     goodMorningMessages.forEach(msg => {
       if (message.content.toLocaleLowerCase().includes(msg.toLocaleLowerCase()) && message.content.length < 15) {
         message.channel.send('🌞 Bom diaaa ' + message.author.toString());
+      }
+    });
+
+    goodNightMessages.forEach(msg => {
+      if (message.content.toLocaleLowerCase().includes(msg.toLocaleLowerCase()) && message.content.length < 15) {
+        message.channel.send('🌚 Boa Noiteee ' + message.author.toString());
       }
     });
   }

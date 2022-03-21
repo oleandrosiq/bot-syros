@@ -23,7 +23,7 @@ client.on('guildMemberRemove', member => {
 client.on('messageDelete', async (message) => {
 	message.guild.channels.cache.forEach(async (channel) => {
 		if (channel.name === 'log-syros') {
-			channel.send(`**Mensagem deletada!**\n Mensagem: ${message.content}\n Autor: ${message.author.tag}\n Canal: ${message.channel} \n apagada por: ${message.author}`);
+			channel.send(`**Mensagem deletada!**\n Mensagem: ${message.content}\n Canal: ${message.channel} \n Author: ${message.author}`);
 		}
 	});
 });
